@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>PrenoBooking | Panel Administrador</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="description" content="Panel administrador – PrenoBooking." />
 
   <!-- Favicon -->
@@ -16,45 +16,28 @@
   <link rel="preconnect" href="https://script.google.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 
-  <script>
-    const BASE_APP_URL = "https://script.google.com/macros/s/AKfycbyp-OnqB-PbDHUm3BFh0kzO8wcN6vhvcAfNRmUaJa5Fb-mYHR6t4c1rA061mxlM8GfN/exec";
-
-    function buildFrameUrl() {
-      const propios = new URLSearchParams(window.location.search);
-      if (!propios.has('view')) propios.set('view', 'login');
-      return `${BASE_APP_URL}?${propios.toString()}`;
-    }
-
-    const frameUrl = buildFrameUrl();
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-
-    if (isMobile) {
-      // 🚀 REDIRECCIÓN INSTANTÁNEA EN MÓVILES: Saltarse el iframe problemático de iOS
-      window.location.replace(frameUrl);
-    }
-  </script>
-
   <style>
     :root{
       --header-h: 64px;
       --header-bg: #F0F7F6;
       --header-border: rgba(0,0,0,.08);
+
       --page-bg: #F0F7F6;
       --brand: #0D9488;
       --accent: #B4F461;
-      --text-main: #0F172A;
     }
 
     html, body{
       height: 100%;
       margin: 0;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Helvetica, Arial, sans-serif;
       background: var(--page-bg);
       overflow: hidden;
     }
 
     .wrap{
-      height: 100dvh;
+      height: 100vh; /* Respaldo para navegadores embebidos (WhatsApp, Instagram) sin soporte de svh */
+      height: 100svh;
       display: grid;
       grid-template-rows: var(--header-h) 1fr;
     }
@@ -68,7 +51,6 @@
       border-bottom: 1px solid var(--header-border);
       padding: 0 20px;
       box-sizing: border-box;
-      z-index: 10;
     }
 
     .admin-badge{
@@ -89,15 +71,11 @@
     }
 
     iframe#admin-frame{
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
       border: 0;
       display: block;
       background: transparent;
-      z-index: 1;
     }
 
     .loader{
@@ -105,9 +83,10 @@
       inset: 0;
       display:grid;
       place-items:center;
-      background: #F0F7F6;
+      background: rgba(238,242,244,.65);
+      backdrop-filter: blur(4px);
       transition: opacity .2s ease;
-      z-index: 5;
+      z-index: 2;
     }
 
     .loader.hidden{ 
@@ -115,27 +94,13 @@
       pointer-events:none; 
     }
 
-    .spinner-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      text-align: center;
-    }
-
     .spinner{
-      width: 48px;
-      height: 48px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
-      border: 4px solid rgba(13,148,136,.15);
+      border: 6px solid rgba(25,118,210,.18);
       border-top-color: var(--brand);
-      animation: spin 0.8s linear infinite;
-    }
-
-    .loading-text {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--brand);
+      animation: spin .9s linear infinite;
     }
 
     @keyframes spin { 
@@ -143,43 +108,50 @@
     }
 
     .fallback{
-      position:absolute;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
       display:none;
-      gap: 14px;
+      gap: 10px;
       align-items:center;
-      padding: 14px 20px;
-      border-radius: 14px;
-      background: #ffffff;
-      border: 1px solid rgba(0,0,0,.08);
-      font-size: 14px;
-      color: rgba(15, 23, 42, 0.7);
-      box-shadow: 0 20px 40px rgba(0,0,0,.06);
-      z-index: 10;
+      justify-content:center;
+      padding: 12px 14px;
+      border: 1px solid rgba(0,0,0,.10);
+      border-radius: 12px;
+      background: #fff;
+      color: rgba(0,0,0,.72);
+      font-weight: 600;
+      z-index: 3;
+      box-shadow: 0 12px 30px rgba(0,0,0,.12);
     }
 
-    .fallback.show{
-      display:flex;
-    }
+    .fallback.show{ display:flex; }
 
     .btn{
-      padding: 10px 16px;
+      display:inline-block;
+      padding: 10px 14px;
       border-radius: 10px;
+      color:#fff;
       text-decoration:none;
-      font-weight: 600;
-      font-size: 14px;
-      color: white;
-      background: var(--brand);
-      transition: opacity .2s ease;
+      font-weight: 800;
+      background: var(--accent);
+      box-shadow: 0 10px 22px rgba(67,160,71,.18);
+      white-space: nowrap;
     }
 
     @media (max-width: 520px){
       :root{ --header-h: 60px; }
+
+      .fallback{
+        flex-direction: column;
+        text-align: center;
+      }
+
       header{
         justify-content: center;
       }
+
       .admin-badge{
         display:none;
       }
@@ -209,12 +181,14 @@
 
     <div class="frame-area">
       <div id="loader" class="loader">
-        <div class="spinner-box">
-          <div class="spinner"></div>
-          <div class="loading-text" id="loader-msg">Abriendo panel de seguridad...</div>
-        </div>
+        <div class="spinner"></div>
       </div>
 
+      <!-- 🐛 FIX: el src ya no es fijo. Se construye con JS (ver abajo) para
+           poder reenviar parámetros como "resetToken" que llegan en la URL
+           de ESTA página (ej. desde el link del correo de recuperación) hacia
+           el iframe de Apps Script. Antes siempre cargaba "?view=login" a
+           secas y el token se perdía. -->
       <iframe
         id="admin-frame"
         title="Panel Administrador"
@@ -223,38 +197,60 @@
       </iframe>
 
       <div id="fb" class="fallback">
-        <span>¿No carga?</span>
-        <a id="fb-link" class="btn" href="#" target="_top">Abrir directamente</a>
+        <span>No se pudo cargar el panel aquí. Te redirigiremos automáticamente:</span>
+        <a id="fb-link" class="btn"
+           href="#"
+           target="_top"
+           rel="noopener noreferrer">Abrir panel</a>
       </div>
     </div>
   </div>
 
   <script>
+    const BASE_APP_URL = "https://script.google.com/macros/s/AKfycbyp-OnqB-PbDHUm3BFh0kzO8wcN6vhvcAfNRmUaJa5Fb-mYHR6t4c1rA061mxlM8GfN/exec";
+
+    // 🔒 Construye la URL del iframe reenviando TODOS los parámetros que
+    // traiga esta página (resetToken, sp, etc.) hacia Apps Script, y fuerza
+    // view=login salvo que la propia URL ya traiga otro "view" explícito.
+    function buildFrameUrl() {
+      const propios = new URLSearchParams(window.location.search);
+      if (!propios.has('view')) propios.set('view', 'login');
+      return `${BASE_APP_URL}?${propios.toString()}`;
+    }
+
     const loader = document.getElementById('loader');
     const fb     = document.getElementById('fb');
     const frame  = document.getElementById('admin-frame');
     const fbLink = document.getElementById('fb-link');
 
-    if (!isMobile && frame) {
-      frame.src = frameUrl;
-      fbLink.href = frameUrl;
+    const frameUrl = buildFrameUrl();
+    frame.src = frameUrl;
+    fbLink.href = frameUrl;
 
-      let appLoadedSuccessfully = false;
+    const hideLoader = () => loader.classList.add('hidden');
 
-      window.addEventListener("message", function(event) {
-        if (event.data === "app_loaded") {
-          appLoadedSuccessfully = true;
-          loader.classList.add('hidden');
-        }
-      });
+    const goDirect = () => {
+      const url = frame?.src;
+      if (!url) return;
+      try { window.top.location.href = url; }
+      catch { window.location.href = url; }
+    };
 
-      setTimeout(() => {
-        if (!appLoadedSuccessfully) {
-          fb.classList.add('show');
-          loader.classList.add('hidden');
-        }
-      }, 5000);
-    }
+    frame.addEventListener('load', hideLoader);
+
+    frame.addEventListener('error', () => {
+      fb.classList.add('show');
+      hideLoader();
+      goDirect();
+    });
+
+    setTimeout(() => {
+      if (!loader.classList.contains('hidden')) {
+        fb.classList.add('show');
+        hideLoader();
+        goDirect();
+      }
+    }, 6000);
   </script>
 </body>
 </html>
