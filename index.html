@@ -225,8 +225,22 @@
     const fbLink = document.getElementById('fb-link');
 
     const frameUrl = buildFrameUrl();
-    frame.src = frameUrl;
     fbLink.href = frameUrl;
+
+    // 🐛 FIX: en iOS (Safari, Chrome-iOS, etc. — todos corren sobre WebKit),
+    // la protección anti-rastreo (ITP) bloquea el almacenamiento de terceros
+    // que Apps Script necesita para su propio sandbox interno. El iframe
+    // "carga" (no se dispara ningún error) pero queda en blanco. No hay forma
+    // de arreglar esto con CSS: en iOS saltamos directo a la página real,
+    // sin pasar por el iframe.
+    const esIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if (esIOS) {
+      window.top.location.href = frameUrl;
+    } else {
+      frame.src = frameUrl;
+    }
 
     const hideLoader = () => loader.classList.add('hidden');
 
@@ -237,21 +251,23 @@
       catch { window.location.href = url; }
     };
 
-    frame.addEventListener('load', hideLoader);
+    if (!esIOS) {
+      frame.addEventListener('load', hideLoader);
 
-    frame.addEventListener('error', () => {
-      fb.classList.add('show');
-      hideLoader();
-      goDirect();
-    });
-
-    setTimeout(() => {
-      if (!loader.classList.contains('hidden')) {
+      frame.addEventListener('error', () => {
         fb.classList.add('show');
         hideLoader();
         goDirect();
-      }
-    }, 6000);
+      });
+
+      setTimeout(() => {
+        if (!loader.classList.contains('hidden')) {
+          fb.classList.add('show');
+          hideLoader();
+          goDirect();
+        }
+      }, 6000);
+    }
   </script>
 </body>
 </html>
