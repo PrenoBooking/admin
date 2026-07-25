@@ -252,3 +252,258 @@
   </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>prenobooking | Panel</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Panel de especialistas — prenobooking." />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png"
+    href="https://raw.githubusercontent.com/vicentemoyanoas-boop/booking-preno-assets/main/favicon.png"
+    sizes="64x64">
+  <link rel="apple-touch-icon"
+    href="https://raw.githubusercontent.com/vicentemoyanoas-boop/booking-preno-assets/main/favicon.png">
+
+  <link rel="preconnect" href="https://script.google.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+
+  <style>
+    :root{
+      --header-h: 48px;
+      --header-bg: #F0F7F6;
+      --header-border: rgba(0,0,0,.08);
+
+      --page-bg: #F0F7F6;
+      --brand: #0D9488;
+      --accent: #B4F461;
+    }
+
+    html, body{
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Helvetica, Arial, sans-serif;
+      background: var(--page-bg);
+      overflow: hidden;
+    }
+
+    .wrap{
+      height: 100vh; /* Respaldo para navegadores embebidos (WhatsApp, Instagram) sin soporte de svh */
+      height: 100svh;
+      position: relative;
+    }
+
+    header{
+      height: var(--header-h);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--header-border);
+      padding: 0 16px;
+      box-sizing: border-box;
+    }
+
+    .frame-area{
+      position: absolute;
+      top: var(--header-h);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--page-bg);
+    }
+
+    iframe#admin-frame{
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: transparent;
+    }
+
+    .loader{
+      position:absolute;
+      inset: 0;
+      display:grid;
+      place-items:center;
+      background: rgba(238,242,244,.65);
+      backdrop-filter: blur(4px);
+      transition: opacity .2s ease;
+      z-index: 2;
+    }
+
+    .loader.hidden{ 
+      opacity: 0; 
+      pointer-events:none; 
+    }
+
+    .spinner{
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 6px solid rgba(25,118,210,.18);
+      border-top-color: var(--brand);
+      animation: spin .9s linear infinite;
+    }
+
+    @keyframes spin { 
+      to { transform: rotate(360deg); } 
+    }
+
+    .fallback{
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      display:none;
+      gap: 10px;
+      align-items:center;
+      justify-content:center;
+      padding: 12px 14px;
+      border: 1px solid rgba(0,0,0,.10);
+      border-radius: 12px;
+      background: #fff;
+      color: rgba(0,0,0,.72);
+      font-weight: 600;
+      z-index: 3;
+      box-shadow: 0 12px 30px rgba(0,0,0,.12);
+    }
+
+    .fallback.show{ display:flex; }
+
+    .btn{
+      display:inline-block;
+      padding: 10px 14px;
+      border-radius: 10px;
+      color:#fff;
+      text-decoration:none;
+      font-weight: 800;
+      background: var(--accent);
+      box-shadow: 0 10px 22px rgba(67,160,71,.18);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 520px){
+      :root{ --header-h: 44px; }
+
+      .fallback{
+        flex-direction: column;
+        text-align: center;
+      }
+
+      header{
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="4" y="4" width="56" height="56" rx="18" fill="#0D9488"/>
+          <rect x="18" y="20" width="28" height="26" rx="6" fill="#ffffff"/>
+          <rect x="22.5" y="24.5" width="19" height="17" rx="3" fill="#0D9488"/>
+          <rect x="23" y="13" width="5" height="12" rx="2.5" fill="#ffffff"/>
+          <rect x="36" y="13" width="5" height="12" rx="2.5" fill="#ffffff"/>
+          <circle cx="32" cy="34" r="4.5" fill="#B4F461"/>
+        </svg>
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:#0F172A;">preno<span style="font-weight:500;color:#0D9488;">booking</span></span>
+      </div>
+    </header>
+
+    <div class="frame-area">
+      <div id="loader" class="loader">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- 🐛 FIX: el src ya no es fijo. Se construye con JS (ver abajo) para
+           poder reenviar parámetros como "resetToken" que llegan en la URL
+           de ESTA página (ej. desde el link del correo de recuperación) hacia
+           el iframe de Apps Script. Antes siempre cargaba "?view=login" a
+           secas y el token se perdía. -->
+      <iframe
+        id="admin-frame"
+        title="Panel Administrador"
+        loading="eager"
+        referrerpolicy="strict-origin-when-cross-origin">
+      </iframe>
+
+      <div id="fb" class="fallback">
+        <span>No se pudo cargar el panel aquí. Te redirigiremos automáticamente:</span>
+        <a id="fb-link" class="btn"
+           href="#"
+           target="_top"
+           rel="noopener noreferrer">Abrir panel</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BASE_APP_URL = "https://script.google.com/macros/s/AKfycbyp-OnqB-PbDHUm3BFh0kzO8wcN6vhvcAfNRmUaJa5Fb-mYHR6t4c1rA061mxlM8GfN/exec";
+
+    // 🔒 Construye la URL del iframe reenviando TODOS los parámetros que
+    // traiga esta página (resetToken, sp, etc.) hacia Apps Script, y fuerza
+    // view=login salvo que la propia URL ya traiga otro "view" explícito.
+    function buildFrameUrl() {
+      const propios = new URLSearchParams(window.location.search);
+      if (!propios.has('view')) propios.set('view', 'login');
+      return `${BASE_APP_URL}?${propios.toString()}`;
+    }
+
+    const loader = document.getElementById('loader');
+    const fb     = document.getElementById('fb');
+    const frame  = document.getElementById('admin-frame');
+    const fbLink = document.getElementById('fb-link');
+
+    const frameUrl = buildFrameUrl();
+    fbLink.href = frameUrl;
+
+    // 🔒 FIX: usamos un formulario oculto en vez de window.location.href para
+    // navegar. Asignar location.href directo a una URL de script.google.com
+    // puede ser interceptado por los "Universal Links" de iOS, que intentan
+    // abrirlo con la app de Google Drive en vez de en el navegador — y como
+    // no es un archivo real de Drive, falla. El envío de un formulario no se
+    // ve afectado por esta interceptación.
+    function irADireccion(url) {
+      const form = document.createElement('form');
+      form.method = 'GET';
+      form.action = url;
+      form.target = '_top';
+      document.body.appendChild(form);
+      form.submit();
+    }
+
+    frame.src = frameUrl;
+
+    const hideLoader = () => loader.classList.add('hidden');
+
+    const goDirect = () => {
+      const url = frame?.src;
+      if (!url) return;
+      irADireccion(url);
+    };
+
+    frame.addEventListener('load', hideLoader);
+
+    frame.addEventListener('error', () => {
+      fb.classList.add('show');
+      hideLoader();
+      goDirect();
+    });
+
+    setTimeout(() => {
+      if (!loader.classList.contains('hidden')) {
+        fb.classList.add('show');
+        hideLoader();
+        goDirect();
+      }
+    }, 6000);
+  </script>
+</body>
+</html>
