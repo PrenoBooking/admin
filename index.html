@@ -1,255 +1,479 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <title>PrenoBooking | Panel</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="Panel de especialistas — prenobooking." />
-  <meta name="robots" content="noindex, nofollow" />
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png"
-    href="https://raw.githubusercontent.com/vicentemoyanoas-boop/booking-preno-assets/main/favicon.png"
-    sizes="64x64">
-  <link rel="apple-touch-icon"
-    href="https://raw.githubusercontent.com/vicentemoyanoas-boop/booking-preno-assets/main/apple-touch-icon.png">
-
-  <link rel="preconnect" href="https://script.google.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap">
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PrenoBooking | Agenda, cobros y sesiones para psicólogos y terapeutas</title>
+  <meta name="description" content="Tus pacientes reservan y pagan solos, el enlace de la sesión se envía al confirmarse el pago y todo queda en tu Google Calendar. Para psicólogos y terapeutas en Chile.">
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/vicentemoyanoas-boop/booking-preno-assets/main/favicon.png">
+  <meta name="theme-color" content="#EEF5F3">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;700&display=swap"></noscript>
+  <script>
+    // Los enlaces de reserva que ya circulan (?sp=...) y el regreso del pago (?action=...&reservaId=...) llegaban a esta dirección.
+    // Se llevan a reservar.html con los mismos parámetros, antes de dibujar nada.
+    (function () {
+      var q = new URLSearchParams(window.location.search);
+      if (q.has("sp") || q.has("eq") || q.has("reservaId") || q.get("action") === "check") { window.location.replace("reservar.html" + window.location.search); return; }
+      var BASE = "https://script.google.com/macros/s/AKfycbx9oRT6Qz9Z3KxioGS1J4cQ0Cy5Rn6PBe95piMO1UPSOgh4lgtyMk0QIZwmjES9z5lU/exec";
+      try {
+        var ctl = new AbortController(), t = setTimeout(function () { ctl.abort(); }, 8000);
+        window.__pbCfg = fetch(BASE + "?action=config", { signal: ctl.signal, credentials: "omit" }).then(function (r) { clearTimeout(t); return r.json(); });
+        window.__pbCfg.catch(function () {});
+      } catch (e) {}
+    })();
+  </script>
   <style>
-    :root{
-      --header-h: 48px;
-      --header-bg: #F0F7F6;
-      --header-border: rgba(0,0,0,.08);
+    :root{--pino:#0B2E2C;--bruma:#EEF5F3;--verde:#0F766E;--verde-claro:#0D9488;--lima:#B4F461;--arena:#E7D9C3;--blanco:#fff;--tinta:#1B3534;--suave:#4A6361;--linea:#D3E3DF;--rojo:#B42318}
+    *{box-sizing:border-box}
+    [hidden]{display:none!important}
+    html{scroll-behavior:smooth;scroll-padding-top:84px}
+    body{margin:0;font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bruma);color:var(--tinta);line-height:1.5;font-size:15.5px}
+    h1,h2,h3,.display{font-family:'Space Grotesk','Inter',system-ui,sans-serif;letter-spacing:-.03em;line-height:1.05;margin:0;color:var(--pino)}
+    p{margin:0}
+    a{color:inherit}
+    a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--verde);outline-offset:3px;border-radius:10px}
+    .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
 
-      --page-bg: #F0F7F6;
-      --brand: #0D9488;
-      --accent: #B4F461;
+    /* Encabezado */
+    .top{position:sticky;top:0;z-index:20;background:rgba(238,245,243,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--linea)}
+    .top .wrap{display:flex;align-items:center;gap:14px;padding-top:9px;padding-bottom:9px;flex-wrap:wrap}
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;font-size:16px;color:var(--pino);margin-right:auto}
+    .logo span span{color:var(--verde-claro);font-weight:500}
+    .menu{display:flex;gap:2px;flex-wrap:wrap;align-items:center}
+    .menu a{text-decoration:none;font-weight:600;font-size:13.5px;color:var(--suave);padding:7px 11px;border-radius:10px}
+    .menu a:hover{background:var(--blanco);color:var(--pino)}
+    .menu a.pestana{color:var(--pino);background:var(--blanco);border:1.5px solid var(--linea)}
+    .menu a.pestana:hover{border-color:var(--verde)}
+    .btn{display:inline-block;text-decoration:none;font-weight:700;font-size:14px;padding:11px 19px;border-radius:12px;border:2px solid transparent;cursor:pointer;font-family:inherit;transition:background .15s,color .15s;text-align:center}
+    .btn.primario{background:var(--verde);color:#fff} .btn.primario:hover{background:#0B5F59}
+    .btn.lima{background:var(--lima);color:var(--pino)} .btn.lima:hover{background:#A3E64B}
+    .btn.borde{border-color:var(--pino);color:var(--pino);background:transparent} .btn.borde:hover{background:var(--pino);color:#fff}
+    .btn.chico{padding:8px 14px;font-size:13px}
+    .acceso-top{display:flex;gap:8px}
+    @media (max-width:860px){.top .wrap{gap:6px 10px;padding-top:7px;padding-bottom:5px} .menu{order:3;width:100%;overflow-x:auto;flex-wrap:nowrap;margin:0 -8px;scrollbar-width:none} .menu::-webkit-scrollbar{display:none} .menu a{white-space:nowrap;padding:6px 10px} .acceso-top .borde{display:none} .menu a.pestana{order:-1}}
+
+    /* Hero */
+    .hero{padding:44px 0 36px}
+    .hero .wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:44px;align-items:center}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--verde)}
+    .eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--lima);box-shadow:0 0 0 3px #DDF7BE}
+    h1{font-size:clamp(34px,5.4vw,58px);line-height:1.02;margin-top:14px}
+    h1 em{font-style:normal;color:var(--verde-claro)}
+    .hero .sub{font-size:17px;color:var(--suave);max-width:520px;margin-top:18px}
+    .hero .acciones{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+    .hero .pacientes{margin-top:20px;font-size:14px;color:var(--suave)}
+    .hero .pacientes a{font-weight:700;color:var(--verde);text-decoration:none} .hero .pacientes a:hover{text-decoration:underline}
+    @media (max-width:900px){.hero{padding-top:28px} .hero .wrap{grid-template-columns:minmax(0,1fr);gap:30px}}
+
+    /* Maqueta del producto (hero) */
+    .maqueta{position:relative;padding:10px 0 30px}
+    .panel{background:var(--blanco);border-radius:22px;box-shadow:0 30px 70px rgba(11,46,44,.16),0 2px 0 var(--linea);overflow:hidden;border:1px solid var(--linea)}
+    .panel .cab{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#F0FDFA;border-bottom:1px solid #CCFBF1}
+    .panel .cab b{font-family:'Space Grotesk',sans-serif;font-size:16px;color:var(--pino)}
+    .panel .cab small{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--verde-claro);text-transform:uppercase}
+    .cita{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px 18px;border-bottom:1px solid #F1F5F4;font-size:14px}
+    .cita:last-child{border-bottom:0}
+    .cita .h{font-weight:700;color:var(--pino)}
+    .cita .n{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cita .n small{display:block;font-weight:500;color:var(--suave);font-size:12px}
+    .pill{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+    .pill.ok{background:#D1FAE5;color:#047857} .pill.esp{background:#FEF3C7;color:#B45309} .pill.libre{background:#F1F5F4;color:var(--suave)}
+    .aviso-flot{position:absolute;right:-8px;bottom:0;width:min(300px,82%);background:var(--pino);color:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 18px 40px rgba(11,46,44,.35);display:flex;gap:12px;align-items:flex-start;animation:entra .7s .4s cubic-bezier(.2,.8,.2,1) both}
+    .aviso-flot i{flex:none;width:30px;height:30px;border-radius:50%;background:var(--lima);color:var(--pino);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800}
+    .aviso-flot b{display:block;font-size:14px} .aviso-flot span{font-size:12.5px;color:#B7CFCA;line-height:1.35;display:block;margin-top:2px}
+    @keyframes entra{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+    @media (max-width:900px){.aviso-flot{right:8px}}
+
+    /* Banner acceso anticipado */
+    .anticipado{background:var(--lima);color:var(--pino)}
+    .anticipado .wrap{display:flex;align-items:center;justify-content:space-between;gap:10px 20px;flex-wrap:wrap;padding-top:14px;padding-bottom:14px}
+    .anticipado p{font-size:15px} .anticipado b{font-family:'Space Grotesk',sans-serif}
+
+    /* Secciones */
+    section.bloque{padding:64px 0}
+    .titulo{max-width:720px;margin-bottom:30px}
+    .titulo .eyebrow{margin-bottom:10px}
+    h2{font-size:clamp(26px,3.4vw,40px)}
+    .titulo p{color:var(--suave);font-size:16px;margin-top:12px;max-width:600px}
+
+    /* Antes / después */
+    .cambio{display:grid;gap:0;border-top:2px solid var(--pino)}
+    .fila{display:grid;grid-template-columns:minmax(0,1fr) 44px minmax(0,1.15fr);gap:14px;align-items:center;padding:16px 0;border-bottom:1px solid var(--linea)}
+    .fila .antes{color:var(--suave);font-size:15px;text-decoration:line-through;text-decoration-color:#E0A39C;text-decoration-thickness:2px}
+    .fila .flecha{width:36px;height:36px;border-radius:50%;background:var(--blanco);border:1px solid var(--linea);display:flex;align-items:center;justify-content:center;color:var(--verde);font-weight:800}
+    .fila .ahora{font-weight:600;color:var(--pino);font-size:16px}
+    .fila .ahora small{display:block;font-weight:400;color:var(--suave);font-size:14px;margin-top:2px}
+    .cambio-cab{display:grid;grid-template-columns:minmax(0,1fr) 44px minmax(0,1.15fr);gap:14px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--suave);margin-bottom:8px}
+    @media (max-width:700px){.fila,.cambio-cab{grid-template-columns:minmax(0,1fr)} .fila{gap:6px} .fila .flecha{display:none} .cambio-cab{display:none} .fila .antes{font-size:13.5px}}
+
+    /* Funciones */
+    .funciones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .fn{background:var(--blanco);border:1px solid var(--linea);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:8px}
+    .fn.grande{grid-column:span 2;background:var(--pino);border-color:var(--pino);color:#D6E7E3}
+    .fn.grande h3{color:#fff;font-size:24px} .fn.grande p{color:#B7CFCA;font-size:15px;max-width:520px}
+    .fn .ic{width:42px;height:42px;border-radius:12px;background:#E6F6F3;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+    .fn.grande .ic{background:rgba(180,244,97,.16)}
+    .fn .ic svg{width:22px;height:22px}
+    .fn h3{font-size:18px;letter-spacing:-.02em}
+    .fn p{color:var(--suave);font-size:14px}
+    .fn .plan{margin-top:auto;padding-top:6px;font-size:11.5px;font-weight:700;color:var(--verde)}
+    .fn.grande .plan{color:var(--lima)}
+    @media (max-width:900px){.funciones{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:600px){.funciones{grid-template-columns:minmax(0,1fr)} .fn.grande{grid-column:auto}}
+
+    /* Cómo empiezas */
+    .pasos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:2px solid var(--pino)}
+    .paso{padding:18px 26px 4px 0}
+    .paso .n{font-family:'Space Grotesk',sans-serif;font-size:34px;font-weight:700;color:var(--verde-claro);line-height:1}
+    .paso h3{font-size:18px;margin:8px 0 6px;letter-spacing:-.02em}
+    .paso p{color:var(--suave);font-size:14.5px}
+    @media (max-width:760px){.pasos{grid-template-columns:minmax(0,1fr)} .paso{padding:16px 0 14px;border-bottom:1px solid var(--linea)}}
+
+    /* Directorio (llamado) */
+    .directorio{background:var(--blanco);border:1px solid var(--linea);border-radius:24px;padding:30px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:30px;align-items:center}
+    .directorio p{color:var(--suave);margin-top:10px;font-size:15px}
+    .directorio .acciones{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .mini-fichas{display:grid;gap:10px}
+    .mini{display:flex;gap:12px;align-items:center;background:var(--bruma);border-radius:14px;padding:12px}
+    .mini .av{flex:none;width:44px;height:44px;border-radius:999px 999px 6px 6px;background:var(--arena);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--pino)}
+    .mini b{display:block;font-size:14px;color:var(--pino)} .mini span{font-size:12.5px;color:var(--suave)}
+    .mini .pill{margin-left:auto}
+    @media (max-width:820px){.directorio{grid-template-columns:minmax(0,1fr);padding:22px}}
+
+    /* Planes (escalera) */
+    .escalera{display:grid;gap:10px}
+    .escalon{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 20px;align-items:center;background:var(--blanco);border-left:8px solid var(--c);border-radius:0 14px 14px 0;padding:14px 18px;margin-left:calc(var(--i) * 5.5%);text-decoration:none}
+    .escalon:hover{background:#F8FCFB}
+    .escalon .q{font-size:13.5px;color:var(--suave)}
+    .escalon .p{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;color:var(--pino);letter-spacing:-.02em;grid-row:1/3;grid-column:2;text-align:right;line-height:1.1}
+    .escalon .p small{display:block;font-size:11.5px;font-weight:400;color:var(--suave);letter-spacing:0}
+    .escalon .nom{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:var(--pino);letter-spacing:-.02em}
+    .escalon .nom em{font-style:normal;font-family:Inter,sans-serif;font-weight:600;font-size:11px;letter-spacing:.02em;color:var(--verde);background:var(--bruma);border-radius:999px;padding:2px 8px;margin-left:8px;vertical-align:2px;white-space:nowrap}
+    .cierre{margin-top:22px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .cierre p{color:var(--suave);font-size:13px}
+    @media (max-width:760px){.escalon{margin-left:calc(var(--i) * 3%);grid-template-columns:minmax(0,1fr)} .escalon .p{grid-row:auto;grid-column:auto;text-align:left;margin-top:6px}}
+
+    /* Confianza */
+    .confianza{background:var(--pino);color:#D6E7E3}
+    .confianza h2{color:#fff}
+    .confianza .titulo p{color:#B7CFCA}
+    .valores{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px;border-top:1px solid rgba(255,255,255,.15);padding-top:22px}
+    .valor h3{font-size:18px;margin-bottom:6px;letter-spacing:-.01em;color:#fff}
+    .valor p{font-size:14.5px;color:#B7CFCA}
+    .confianza a{color:var(--lima)}
+    @media (max-width:760px){.valores{grid-template-columns:minmax(0,1fr);gap:18px}}
+
+    /* Preguntas */
+    .preguntas{max-width:780px}
+    details{border-bottom:1px solid var(--linea);padding:4px 0}
+    details:first-of-type{border-top:1px solid var(--linea)}
+    summary{cursor:pointer;font-weight:600;font-size:16px;padding:14px 4px;list-style:none;display:flex;justify-content:space-between;gap:16px;color:var(--pino)}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:"+";font-size:20px;line-height:1;color:var(--verde);flex:none}
+    details[open] summary::after{content:"\2212"}
+    details p{padding:0 4px 16px;color:var(--suave);font-size:15px;max-width:660px}
+
+    /* Llamado final */
+    .final{padding:20px 0 70px}
+    .final .caja{background:var(--verde);border-radius:26px;padding:40px 34px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+    .final h2{color:#fff;font-size:clamp(24px,3vw,36px);max-width:620px}
+    .final p{color:#CCFBF1;margin-top:8px}
+
+    /* Barra fija en celular */
+    .cta{display:none}
+    @media (max-width:760px){
+      .cta{display:flex;position:fixed;left:10px;right:10px;bottom:10px;z-index:30;align-items:center;gap:10px;background:var(--pino);color:#fff;border-radius:16px;padding:10px 10px 10px 14px;box-shadow:0 8px 24px rgba(11,46,44,.35);transform:translateY(140%);transition:transform .25s ease}
+      .cta.ver{transform:none}
+      .cta p{flex:1;font-size:12.5px;line-height:1.3;color:#D6E7E3} .cta p b{display:block;color:#fff;font-size:13.5px}
+      .cta .btn{padding:9px 14px;font-size:13px;white-space:nowrap;border:0}
+      body{padding-bottom:70px}
     }
-
-    html, body{
-      height: 100%;
-      margin: 0;
-      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Helvetica, Arial, sans-serif;
-      background: var(--page-bg);
-      overflow: hidden;
-    }
-
-    .wrap{
-      height: 100vh; /* Respaldo para navegadores embebidos (WhatsApp, Instagram) sin soporte de svh */
-      height: 100svh;
-      position: relative;
-    }
-
-    header{
-      height: var(--header-h);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      background: var(--header-bg);
-      border-bottom: 1px solid var(--header-border);
-      padding: 0 16px;
-      box-sizing: border-box;
-    }
-
-    .frame-area{
-      position: absolute;
-      top: var(--header-h);
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--page-bg);
-    }
-
-    iframe#admin-frame{
-      width: 100%;
-      height: 100%;
-      border: 0;
-      display: block;
-      background: transparent;
-    }
-
-    .loader{
-      position:absolute;
-      inset: 0;
-      display:grid;
-      place-items:center;
-      background: rgba(238,242,244,.65);
-      backdrop-filter: blur(4px);
-      transition: opacity .2s ease;
-      z-index: 2;
-    }
-
-    .loader.hidden{ 
-      opacity: 0; 
-      pointer-events:none; 
-    }
-
-    .spinner{
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      border: 6px solid rgba(25,118,210,.18);
-      border-top-color: var(--brand);
-      animation: spin .9s linear infinite;
-    }
-
-    @keyframes spin { 
-      to { transform: rotate(360deg); } 
-    }
-
-    .fallback{
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 12px;
-      display:none;
-      gap: 10px;
-      align-items:center;
-      justify-content:center;
-      padding: 12px 14px;
-      border: 1px solid rgba(0,0,0,.10);
-      border-radius: 12px;
-      background: #fff;
-      color: rgba(0,0,0,.72);
-      font-weight: 600;
-      z-index: 3;
-      box-shadow: 0 12px 30px rgba(0,0,0,.12);
-    }
-
-    .fallback.show{ display:flex; }
-
-    .btn{
-      display:inline-block;
-      padding: 10px 14px;
-      border-radius: 10px;
-      color:#fff;
-      text-decoration:none;
-      font-weight: 800;
-      background: var(--accent);
-      box-shadow: 0 10px 22px rgba(67,160,71,.18);
-      white-space: nowrap;
-    }
-
-    @media (max-width: 520px){
-      :root{ --header-h: 44px; }
-
-      .fallback{
-        flex-direction: column;
-        text-align: center;
-      }
-
-      header{
-        justify-content: center;
-      }
-    }
+    footer{background:var(--pino);color:#B7CFCA;padding:26px 0;font-size:13px}
+    footer .wrap{display:flex;justify-content:space-between;gap:12px 28px;flex-wrap:wrap}
+    footer a{color:#fff;display:inline-block;padding:7px 2px}
+    @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} .aviso-flot{animation:none} .btn,.cta{transition:none}}
   </style>
 </head>
-
 <body>
-  <div class="wrap">
-    <header>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true">
-          <rect x="4" y="4" width="56" height="56" rx="18" fill="#0D9488"/>
-          <rect x="18" y="20" width="28" height="26" rx="6" fill="#ffffff"/>
-          <rect x="22.5" y="24.5" width="19" height="17" rx="3" fill="#0D9488"/>
-          <rect x="23" y="13" width="5" height="12" rx="2.5" fill="#ffffff"/>
-          <rect x="36" y="13" width="5" height="12" rx="2.5" fill="#ffffff"/>
-          <circle cx="32" cy="34" r="4.5" fill="#B4F461"/>
-        </svg>
-        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:#0F172A;">preno<span style="font-weight:500;color:#0D9488;">booking</span></span>
-      </div>
-    </header>
-
-    <div class="frame-area">
-      <div id="loader" class="loader">
-        <div class="spinner"></div>
-      </div>
-
-      <!-- 🐛 FIX: el src ya no es fijo. Se construye con JS (ver abajo) para
-           poder reenviar parámetros como "resetToken" que llegan en la URL
-           de ESTA página (ej. desde el link del correo de recuperación) hacia
-           el iframe de Apps Script. Antes siempre cargaba "?view=login" a
-           secas y el token se perdía. -->
-      <iframe
-        id="admin-frame"
-        title="Panel Administrador"
-        loading="eager"
-        referrerpolicy="strict-origin-when-cross-origin">
-      </iframe>
-
-      <div id="fb" class="fallback">
-        <span>No se pudo cargar el panel aquí. Te redirigiremos automáticamente:</span>
-        <a id="fb-link" class="btn"
-           href="#"
-           target="_top"
-           rel="noopener noreferrer">Abrir panel</a>
+  <header class="top">
+    <div class="wrap">
+      <a class="logo" href="./" aria-label="PrenoBooking, inicio">
+        <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="4" width="56" height="56" rx="18" fill="#0D9488"/><rect x="18" y="20" width="28" height="26" rx="6" fill="#ffffff"/><rect x="23" y="13" width="5" height="12" rx="2.5" fill="#ffffff"/><rect x="36" y="13" width="5" height="12" rx="2.5" fill="#ffffff"/><circle cx="32" cy="34" r="4.5" fill="#B4F461"/></svg>
+        <span class="display">Preno<span>Booking</span></span>
+      </a>
+      <nav class="menu" aria-label="Principal">
+        <a href="#funciones">Funciones</a><a href="#como">Cómo empiezas</a><a href="#planes">Planes</a><a href="#preguntas">Preguntas</a><a class="pestana" href="especialistas.html">Buscar especialista</a>
+      </nav>
+      <div class="acceso-top">
+        <a class="btn borde chico" href="https://prenobooking.github.io/admin">Iniciar sesión</a>
+        <a class="btn primario chico" href="registro.html">Crear mi cuenta</a>
       </div>
     </div>
-  </div>
+  </header>
 
-  <script>
-    const BASE_APP_URL = "https://script.google.com/macros/s/AKfycbx9oRT6Qz9Z3KxioGS1J4cQ0Cy5Rn6PBe95piMO1UPSOgh4lgtyMk0QIZwmjES9z5lU/exec";
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <div>
+          <span class="eyebrow">Para psicólogos y terapeutas</span>
+          <h1>Tú atiendes.<br><em>Nosotros coordinamos.</em></h1>
+          <p class="sub">Tus pacientes eligen hora y pagan al reservar. El enlace de la sesión les llega solo y todo queda en tu Google Calendar. Sin mensajes de ida y vuelta, sin perseguir transferencias.</p>
+          <div class="acciones">
+            <a class="btn primario" href="registro.html">Crear mi cuenta</a>
+            <a class="btn borde" href="#funciones">Ver lo que hace</a>
+          </div>
+          <p class="pacientes">¿Buscas terapeuta? <a href="especialistas.html">Encuentra a tu especialista →</a></p>
+        </div>
+        <div class="maqueta" aria-hidden="true">
+          <div class="panel">
+            <div class="cab"><b>Tu agenda de hoy</b><small>Martes</small></div>
+            <div class="cita"><span class="h">09:00</span><span class="n">Valentina S.<small>Online · 50 min</small></span><span class="pill ok">Pagado</span></div>
+            <div class="cita"><span class="h">10:00</span><span class="n">Matías F.<small>Presencial · 50 min</small></span><span class="pill ok">Pagado</span></div>
+            <div class="cita"><span class="h">11:00</span><span class="n">Josefa A.<small>Online · 50 min</small></span><span class="pill esp">Esperando pago</span></div>
+            <div class="cita"><span class="h">12:00</span><span class="n">Hora disponible<small>Visible en tu link</small></span><span class="pill libre">Libre</span></div>
+            <div class="cita"><span class="h">15:00</span><span class="n">Tomás H.<small>Online · 50 min</small></span><span class="pill ok">Pagado</span></div>
+          </div>
+          <div class="aviso-flot"><i>✓</i><div><b>Nueva reserva pagada</b><span>Jueves 16:00 · el enlace de la sesión ya fue enviado</span></div></div>
+        </div>
+      </div>
+    </section>
 
-    // 🔒 Construye la URL del iframe reenviando TODOS los parámetros que
-    // traiga esta página (resetToken, sp, etc.) hacia Apps Script, y fuerza
-    // view=login salvo que la propia URL ya traiga otro "view" explícito.
-    function buildFrameUrl() {
-      const propios = new URLSearchParams(window.location.search);
-      if (!propios.has('view')) propios.set('view', 'login');
-      return `${BASE_APP_URL}?${propios.toString()}`;
-    }
+    <div class="anticipado" id="anticipado" hidden>
+      <div class="wrap">
+        <p><b>Acceso anticipado:</b> <span id="anticipado-texto"></span></p>
+        <a class="btn borde chico" href="registro.html">Quiero mi cupo</a>
+      </div>
+    </div>
 
-    const loader = document.getElementById('loader');
-    const fb     = document.getElementById('fb');
-    const frame  = document.getElementById('admin-frame');
-    const fbLink = document.getElementById('fb-link');
+    <section class="bloque" aria-labelledby="t-cambio">
+      <div class="wrap">
+        <div class="titulo">
+          <span class="eyebrow">Lo que dejas de hacer</span>
+          <h2 id="t-cambio">Terminas de atender y tu trabajo termina ahí.</h2>
+          <p>Coordinar, confirmar, cobrar y reorganizar se lleva horas que no le cobras a nadie. PrenoBooking lo hace por ti.</p>
+        </div>
+        <div class="cambio-cab"><span>Hoy, a mano</span><span></span><span>Con PrenoBooking</span></div>
+        <div class="cambio">
+          <div class="fila"><span class="antes">Coordinar horas por mensaje</span><span class="flecha">→</span><span class="ahora">Tus pacientes eligen hora en tu link, a cualquier hora<small>Solo ven los horarios que tú abriste.</small></span></div>
+          <div class="fila"><span class="antes">Perseguir transferencias</span><span class="flecha">→</span><span class="ahora">Pagan al reservar, directo a tu cuenta<small>Con Khipu. Si un pago queda pendiente, el recordatorio sale solo.</small></span></div>
+          <div class="fila"><span class="antes">Mandar el link de la videollamada</span><span class="flecha">→</span><span class="ahora">El enlace llega solo al confirmarse el pago<small>Junto con la confirmación de la hora.</small></span></div>
+          <div class="fila"><span class="antes">Reorganizar la agenda por cancelaciones</span><span class="flecha">→</span><span class="ahora">El paciente reagenda o cancela desde su link<small>Con el plazo que tú defines (por defecto, 24 horas antes).</small></span></div>
+          <div class="fila"><span class="antes">Anotar cada cita en tu calendario</span><span class="flecha">→</span><span class="ahora">Todo queda en tu Google Calendar<small>Sin pasar nada a mano.</small></span></div>
+        </div>
+      </div>
+    </section>
 
-    const frameUrl = buildFrameUrl();
-    fbLink.href = frameUrl;
+    <section class="bloque" id="funciones" aria-labelledby="t-fn" style="padding-top:20px">
+      <div class="wrap">
+        <div class="titulo">
+          <span class="eyebrow">Funciones</span>
+          <h2 id="t-fn">Agenda, cobros y sesiones en el mismo lugar</h2>
+          <p>Empiezas con lo esencial y sumas herramientas clínicas y de gestión cuando tu consulta lo pide.</p>
+        </div>
+        <div class="funciones">
+          <article class="fn grande">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#B4F461" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="m9 15 2 2 4-4"/></svg></div>
+            <h3>Tu link de reserva, abierto 24/7</h3>
+            <p>Lo compartes en Instagram, WhatsApp o tu firma de correo. Tus pacientes ven tus horarios libres, eligen online o presencial y reservan en minutos, sin crear cuenta.</p>
+            <span class="plan">Todos los planes</span>
+          </article>
+          <article class="fn">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/></svg></div>
+            <h3>Cobro con Khipu, sin comisión</h3>
+            <p>El pago va directo a tu cuenta. PrenoBooking no cobra comisión por sesión.</p>
+            <span class="plan">Todos los planes</span>
+          </article>
+          <article class="fn">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/></svg></div>
+            <h3>Confirmaciones y recordatorios</h3>
+            <p>Correos automáticos al reservar y recordatorios cuando un pago queda pendiente.</p>
+            <span class="plan">Todos los planes</span>
+          </article>
+          <article class="fn">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
+            <h3>Sincronizado con Google Calendar</h3>
+            <p>Cada reserva, cambio o cancelación aparece en tu calendario.</p>
+            <span class="plan">Todos los planes</span>
+          </article>
+          <article class="fn">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg></div>
+            <h3>Notas, tareas y cuestionarios</h3>
+            <p>Registro de cada sesión, tareas para tus pacientes y cuestionarios con alertas de riesgo.</p>
+            <span class="plan">Plan Profesional</span>
+          </article>
+          <article class="fn">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+            <h3>Métricas y boleta de honorarios</h3>
+            <p>Ingresos, citas y cancelaciones del mes, exportación a CSV y boleta asistida con la retención del año.</p>
+            <span class="plan">Plan Profesional</span>
+          </article>
+          <article class="fn">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16 14.2a5 5 0 0 1 6 4.8"/></svg></div>
+            <h3>Equipos y centros</h3>
+            <p>Administra a tu equipo desde una cuenta, o arrienda salas con cobro por uso y packs de sesiones.</p>
+            <span class="plan">Planes Equipo y Espacio</span>
+          </article>
+        </div>
+      </div>
+    </section>
 
-    // 🔒 FIX: usamos un formulario oculto en vez de window.location.href para
-    // navegar. Asignar location.href directo a una URL de script.google.com
-    // puede ser interceptado por los "Universal Links" de iOS, que intentan
-    // abrirlo con la app de Google Drive en vez de en el navegador — y como
-    // no es un archivo real de Drive, falla. El envío de un formulario no se
-    // ve afectado por esta interceptación.
-    function irADireccion(url) {
-      const form = document.createElement('form');
-      form.method = 'GET';
-      form.action = url;
-      form.target = '_top';
-      document.body.appendChild(form);
-      form.submit();
-    }
+    <section class="bloque" id="como" aria-labelledby="t-como" style="padding-top:20px">
+      <div class="wrap">
+        <div class="titulo">
+          <span class="eyebrow">Cómo empiezas</span>
+          <h2 id="t-como">Listo para recibir reservas en tres pasos</h2>
+        </div>
+        <div class="pasos">
+          <div class="paso"><div class="n">1</div><h3>Crea tu cuenta</h3><p>Adjunta tu certificado de título. Revisamos cada solicitud y, si te aprobamos, te llegan tus accesos por correo.</p></div>
+          <div class="paso"><div class="n">2</div><h3>Configura tu consulta</h3><p>Define tus horarios, precio y duración de sesión, y conecta tu cuenta de Khipu para recibir los pagos.</p></div>
+          <div class="paso"><div class="n">3</div><h3>Comparte tu link</h3><p>Desde ese momento tus pacientes reservan y pagan solos. Si quieres, también apareces en el buscador de especialistas.</p></div>
+        </div>
+      </div>
+    </section>
 
-    frame.src = frameUrl;
+    <section class="bloque" aria-labelledby="t-dir" style="padding-top:10px">
+      <div class="wrap">
+        <div class="directorio">
+          <div>
+            <span class="eyebrow">Más visibilidad</span>
+            <h2 id="t-dir" style="margin-top:10px">Que nuevos pacientes te encuentren</h2>
+            <p>Activa tu perfil público y apareces en el buscador de PrenoBooking, con tu presentación, tus enfoques, tu modalidad y tu precio. Quien te elige reserva y paga ahí mismo.</p>
+            <div class="acciones">
+              <a class="btn primario" href="registro.html">Crear mi cuenta</a>
+              <a class="btn borde" href="especialistas.html">Ver el buscador</a>
+            </div>
+          </div>
+          <div class="mini-fichas" aria-hidden="true">
+            <span style="font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--suave)">Vista de ejemplo</span>
+            <div class="mini"><span class="av">CR</span><div><b>Camila Rojas</b><span>Cognitivo-conductual · Online</span></div><span class="pill ok">$35.000</span></div>
+            <div class="mini"><span class="av">AM</span><div><b>Andrés Muñoz</b><span>Sistémica · Presencial</span></div><span class="pill ok">$30.000</span></div>
+            <div class="mini"><span class="av">PL</span><div><b>Paula Lagos</b><span>ACT · Online y presencial</span></div><span class="pill ok">$32.000</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    const hideLoader = () => loader.classList.add('hidden');
+    <section class="bloque" id="planes" aria-labelledby="t-planes">
+      <div class="wrap">
+        <div class="titulo">
+          <span class="eyebrow">Planes</span>
+          <h2 id="t-planes">Crece a tu ritmo</h2>
+          <p>Empiezas con lo básico y subes de escalón cuando tu consulta lo pide. Precios mensuales en pesos chilenos, más IVA.</p>
+        </div>
+        <div class="escalera">
+          <a class="escalon" href="planes.html#plan-esencial" style="--i:0;--c:#99F6E4"><span class="nom">Primeros pasos<em>Plan Esencial</em></span><span class="q">Agenda online, cobro de cada sesión y Google Calendar.</span><span class="p"><span id="h-esencial">$14.900</span><small>+ IVA al mes</small></span></a>
+          <a class="escalon" href="planes.html#plan-profesional" style="--i:1;--c:#2DD4BF"><span class="nom">Consulta propia<em>Plan Profesional</em></span><span class="q">Notas, métricas y boleta de honorarios asistida.</span><span class="p"><span id="h-profesional">$24.900</span><small>+ IVA al mes</small></span></a>
+          <a class="escalon" href="planes.html#plan-equipo" style="--i:2;--c:#0D9488"><span class="nom">Equipo<em>Plan Equipo</em></span><span class="q">Una cuenta para administrar a todo tu equipo.</span><span class="p"><span id="h-equipo">$19.900</span><small>+ IVA por especialista (mínimo 3)</small></span></a>
+          <a class="escalon" href="planes.html#plan-espacio" style="--i:3;--c:#0F766E"><span class="nom">Centro<em>Plan Espacio</em></span><span class="q">Salas, packs y cobro por uso para tu centro.</span><span class="p"><span id="h-espacio">$29.900</span><small>+ IVA al mes, con 4 salas</small></span></a>
+        </div>
+        <div class="cierre">
+          <a class="btn primario" href="registro.html">Crear mi cuenta</a>
+          <a class="btn borde" href="planes.html">Comparar planes</a>
+          <p id="cierre-nota">Sin comisión por sesión. Te das de baja cuando quieras.</p>
+        </div>
+      </div>
+    </section>
 
-    const goDirect = () => {
-      const url = frame?.src;
-      if (!url) return;
-      irADireccion(url);
-    };
+    <section class="bloque confianza" aria-labelledby="t-conf">
+      <div class="wrap">
+        <div class="titulo">
+          <span class="eyebrow" style="color:var(--lima)">Hecho en Chile</span>
+          <h2 id="t-conf">Pensado para quien atiende de forma independiente</h2>
+          <p>PrenoBooking nació para que los profesionales dediquen su tiempo a atender y no a coordinar.</p>
+        </div>
+        <div class="valores">
+          <div class="valor"><h3>Tu plata es tuya</h3><p>Cobras con tu propia cuenta de Khipu. El pago llega directo a ti y no hay comisión por sesión.</p></div>
+          <div class="valor"><h3>Profesionales revisados</h3><p>Pedimos el certificado de título antes de aprobar cada cuenta. Eso cuida a tus pacientes y al resto de la comunidad.</p></div>
+          <div class="valor"><h3>Datos de tus pacientes, cuidados</h3><p>La información clínica solo la ves tú. Lee cómo la tratamos en la <a href="privacidad.html">Política de Privacidad</a>.</p></div>
+        </div>
+      </div>
+    </section>
 
-    frame.addEventListener('load', hideLoader);
+    <section class="bloque" id="preguntas" aria-labelledby="t-faq">
+      <div class="wrap preguntas">
+        <h2 id="t-faq" style="margin-bottom:20px">Preguntas frecuentes</h2>
+        <details><summary>¿Necesito una cuenta de Khipu?</summary><p>Sí. Los pagos de tus pacientes se hacen con Khipu y llegan directo a tu cuenta. Te guiamos para conectarla al configurar tu consulta.</p></details>
+        <details><summary>¿PrenoBooking cobra comisión por sesión?</summary><p>No. Pagas solo tu plan mensual. Khipu cobra su propia tarifa por cada pago que recibes.</p></details>
+        <details><summary>¿Mis pacientes tienen que crear una cuenta?</summary><p>No. Entran a tu link, eligen hora, pagan y reciben la confirmación por correo.</p></details>
+        <details><summary>¿Sirve si atiendo online y presencial?</summary><p>Sí. Defines qué modalidades ofreces y el paciente elige al reservar. En las sesiones online el enlace se envía solo al confirmarse el pago.</p></details>
+        <details><summary>¿Qué pasa si un paciente cancela?</summary><p>Puede cancelar o reagendar desde el enlace de su correo, dentro del plazo que tú defines (por defecto, 24 horas antes). Pasado ese plazo, te tiene que escribir a ti.</p></details>
+        <details><summary>¿Tengo que aparecer en el buscador de especialistas?</summary><p>No, es opcional. Puedes trabajar solo con tu link y activar tu perfil público cuando quieras.</p></details>
+        <details><summary>¿Puedo darme de baja?</summary><p>Sí, cuando quieras, sin permanencia mínima.</p></details>
+      </div>
+    </section>
 
-    frame.addEventListener('error', () => {
-      fb.classList.add('show');
-      hideLoader();
-      goDirect();
-    });
+    <section class="final" aria-labelledby="t-final">
+      <div class="wrap">
+        <div class="caja">
+          <div>
+            <h2 id="t-final">Menos administración. Más tiempo para tus pacientes.</h2>
+            <p>Crea tu cuenta y te avisamos apenas esté aprobada.</p>
+          </div>
+          <a class="btn lima" href="registro.html">Crear mi cuenta</a>
+        </div>
+      </div>
+    </section>
+  </main>
 
-    setTimeout(() => {
-      if (!loader.classList.contains('hidden')) {
-        fb.classList.add('show');
-        hideLoader();
-        goDirect();
+  <aside class="cta" id="cta" aria-label="Crear cuenta">
+    <p><b>¿Atiendes pacientes?</b>Agenda, cobros y sesiones en un lugar.</p>
+    <a class="btn lima" href="registro.html">Crear cuenta</a>
+  </aside>
+
+  <footer>
+    <div class="wrap">
+      <span>© PrenoBooking · Chile</span>
+      <span><a href="especialistas.html">Buscar especialista</a> · <a href="planes.html">Planes</a> · <a href="terminos.html">Términos del Servicio</a> · <a href="privacidad.html">Política de Privacidad</a> · <a href="mailto:prenobooking@gmail.com">prenobooking@gmail.com</a> · <a href="https://prenobooking.github.io/admin">Iniciar sesión</a></span>
+    </div>
+  </footer>
+
+<script>
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    function pesos(n) { return "$" + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+    function plural(n, uno, varios) { return n + " " + (n === 1 ? uno : varios); }
+    function entero(v, min, max) { return typeof v === "number" && isFinite(v) && Math.floor(v) === v && v >= min && v <= max; }
+    function leer(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+    function guardar(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+    // Precios, prueba y acceso anticipado: los toma de la Consola. Si no llega respuesta, queda lo que trae escrito la página.
+    function aplicarCfg(c) {
+      if (!c || c.ok !== true || !Array.isArray(c.planes)) return;
+      c.planes.forEach(function (p) {
+        if ((p.id === "esencial" || p.id === "profesional") && entero(p.neto, 1, 10000000)) $("h-" + p.id).textContent = pesos(p.neto);
+      });
+      var pr = c.precios;
+      if (pr && entero(pr.equipoPorEspecialista, 1000, 500000)) $("h-equipo").textContent = pesos(pr.equipoPorEspecialista);
+      if (pr && entero(pr.espacioBase, 1000, 2000000)) $("h-espacio").textContent = pesos(pr.espacioBase);
+      if (c.pruebaActiva === true && entero(c.pruebaDias, 1, 60)) {
+        $("cierre-nota").textContent = "Prueba gratis " + plural(c.pruebaDias, "día", "días") + " los planes Esencial y Profesional. Sin comisión por sesión.";
       }
-    }, 6000);
-  </script>
+      var f = c.fundadores;
+      if (f && f.activa === true && f.hayCupos === true && entero(f.cupos, 1, 500)) {
+        var partes = [];
+        if (entero(f.mesesGratis, 1, 12)) partes.push(plural(f.mesesGratis, "mes", "meses") + " gratis repartidos en el año");
+        if (entero(f.mesesTarifa, 1, 36)) partes.push("su tarifa congelada por " + plural(f.mesesTarifa, "mes", "meses"));
+        if (partes.length) { $("anticipado-texto").textContent = "los primeros " + f.cupos + " profesionales tienen " + partes.join(" y ") + "."; $("anticipado").hidden = false; }
+      }
+    }
+    var cache = leer("pb_cfg"); if (cache) aplicarCfg(cache);
+    (window.__pbCfg || Promise.reject()).then(function (c) { if (c && c.ok === true) { guardar("pb_cfg", c); aplicarCfg(c); } }).catch(function () {});
+
+    // Barra fija en celular: aparece al bajar y se esconde en el llamado final
+    (function () {
+      var cta = $("cta"), enFinal = false;
+      function act() { cta.classList.toggle("ver", !enFinal && window.scrollY > 500); }
+      window.addEventListener("scroll", act, { passive: true });
+      if ("IntersectionObserver" in window) {
+        new IntersectionObserver(function (en) { enFinal = en[0].isIntersecting; act(); }, { threshold: 0.2 }).observe(document.querySelector(".final"));
+      }
+      act();
+    })();
+  })();
+</script>
 </body>
 </html>
